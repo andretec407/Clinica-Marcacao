@@ -1,38 +1,50 @@
-import React, { useState } from 'react';
-import AgendamentoPage from './Pages/AgendamentoPage';
-import ListagemPage from './Pages/ListagemPage';
-import './App.css';
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { Header } from './components/Header'
+import { Footer } from './components/Footer'
 
-function App() {
-  const [telaAtiva, setTelaAtiva] = useState('agendamento');
+import { Home } from './pages/Home'
+import { Agendamentos } from './pages/Agendamentos'
+import { Atendimento } from './pages/Atendimento'
+import { Dashboard } from './pages/Dashboard'
+import { Convenios } from './pages/Convenios'
+import { Relatorios } from './pages/Relatorios'
+import { NotFound } from './pages/NotFound'
+
+import { useAuth } from './context/AuthContext'
+
+export default function App() {
+  const { role } = useAuth()
 
   return (
-    <div>
-      {/* Barra de navegação parecida com a do Laboratório Nabuco */}
-      <nav className="navbar">
-        <div className="logo-placeholder"><PerLabVida></PerLabVida> <span style={{fontWeight: '300'}}>Agendamentos</span></div>
-        <div className="nav-links">
-          <button 
-            className={telaAtiva === 'agendamento' ? 'active' : ''} 
-            onClick={() => setTelaAtiva('agendamento')}
-          >
-            Novo Agendamento
-          </button>
-          <button 
-            className={telaAtiva === 'listagem' ? 'active' : ''} 
-            onClick={() => setTelaAtiva('listagem')}
-          >
-            Lista de Atendimentos
-          </button>
-        </div>
-      </nav>
+    <div className="app-shell">
+      <Header />
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/agendamentos" element={<Agendamentos />} />
 
-      {/* Conteúdo dinâmico das páginas dentro do container */}
-      <div className="container">
-        {telaAtiva === 'agendamento' ? <AgendamentoPage /> : <ListagemPage />}
-      </div>
+          {/* Rotas restritas para o perfil Atendente */}
+          <Route
+            path="/atendimento"
+            element={role === 'atendente' ? <Atendimento /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/dashboard"
+            element={role === 'atendente' ? <Dashboard /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/convenios"
+            element={role === 'atendente' ? <Convenios /> : <Navigate to="/" />}
+          />
+          <Route
+            path="/relatorios"
+            element={role === 'atendente' ? <Relatorios /> : <Navigate to="/" />}
+          />
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+      <Footer />
     </div>
-  );
+  )
 }
-
-export default App;

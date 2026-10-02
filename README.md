@@ -125,3 +125,5 @@ docs: adiciona requisitos e diagramas
 Os requisitos, regras de negócio, modelo de dados e diagramas estão em `docs/`. O enunciado também exige atenção a segurança, disponibilidade, auditoria, desempenho, concorrência, LGPD e acessibilidade. fileciteturn0file1L83-L97
 
 Entrega acadêmica: desenvolvimento realizado em dev e integrado a main.
+
+> Desenvolvimento realizado na branch `dev` e integrado por merge na `main`.

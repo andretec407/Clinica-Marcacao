@@ -14,7 +14,7 @@ Controlar a emissão, priorização, chamada e atendimento de senhas, com painel
 - Autenticação: JWT + bcrypt
 - API: REST/JSON
 
-A escolha de Node.js + Express segue uma das infraestruturas indicadas no enunciado. O frontend permanece em React, conforme exigido. fileciteturn0file1L207-L219
+A escolha de Node.js + Express segue uma das infraestruturas indicadas no enunciado. O frontend permanece em React, conforme exigido.
 
 ## Arquitetura
 
@@ -49,7 +49,7 @@ nassauTickets/
 | Preencher pelo grupo | Preencher | Desenvolvedor |
 | Preencher pelo grupo | Preencher | Testador |
 
-> Substituam os placeholders antes da entrega. A atividade exige que a seção se chame exatamente `## Membros`. fileciteturn0file1L21-L47
+> Substituam os placeholders antes da entrega. A atividade exige que a seção se chame exatamente `## Membros`.
 
 ## Regras principais
 
@@ -62,7 +62,7 @@ nassauTickets/
 - Numeração: `YYMMDD-PPSQ`, com sequência de três dígitos reiniciada diariamente por tipo.
 - Estados: `EMITIDA → AGUARDANDO → CHAMADA → CHAMADA_NOVAMENTE → EM_ATENDIMENTO → ATENDIDA`, com saída para `NAO_COMPARECEU`.
 
-Essas regras são derivadas da especificação fornecida na atividade. fileciteturn0file0L93-L118 fileciteturn0file0L135-L160
+Essas regras são derivadas da especificação fornecida na atividade.
 
 ## Backend
 
@@ -107,7 +107,7 @@ O frontend utiliza `VITE_API_URL=http://localhost:3000/api` por padrão. Para al
 
 ## Branches e versionamento
 
-A entrega deve possuir as branches `main` e `dev`. O desenvolvimento deve ocorrer primeiro em `dev`, seguido de merge para `main`, mantendo o histórico. fileciteturn0file1L220-L237
+A entrega deve possuir as branches `main` e `dev`. O desenvolvimento deve ocorrer primeiro em `dev`, seguido de merge para `main`, mantendo o histórico.
 
 Exemplos de commits:
 
@@ -122,6 +122,6 @@ docs: adiciona requisitos e diagramas
 
 ## Documentação
 
-Os requisitos, regras de negócio, modelo de dados e diagramas estão em `docs/`. O enunciado também exige atenção a segurança, disponibilidade, auditoria, desempenho, concorrência, LGPD e acessibilidade. fileciteturn0file1L83-L97
+Os requisitos, regras de negócio, modelo de dados e diagramas estão em `docs/`. O enunciado também exige atenção a segurança, disponibilidade, auditoria, desempenho, concorrência, LGPD e acessibilidade.
 
 Entrega acadêmica: desenvolvimento realizado em dev e integrado a main.

@@ -37,10 +37,11 @@ nassauTickets/
 
 | Nome | Matrícula | Papel |
 |---|---|---|
-| Preencher pelo grupo | Preencher | Scrum Master |
-| Preencher pelo grupo | Preencher | Documentador |
-| Preencher pelo grupo | Preencher | Desenvolvedor |
-| Preencher pelo grupo | Preencher | Testador |
+| Polona Faustino dos Santos | 11033915 | Scrum Master |
+| André Carlos Ferreira de Lima | 01775590 | Documentador |
+| João Victor Rodrigues | 01849475 | Desenvolvedor-1 |
+| Niraldo Barbosa | 01797309 | Desenvolvedor-2 |
+| Tiago Barros da Silva | 01597841 | Testador |
 
 > Substituam os placeholders antes da entrega. A atividade exige que a seção se chame exatamente `## Membros`.
 

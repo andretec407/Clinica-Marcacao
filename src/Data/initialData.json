@@ -1,0 +1,40 @@
+{
+  "agendamentos": [
+    {
+      "id": "1",
+      "paciente": "Maria Silva",
+      "cpf": "123.456.789-00",
+      "exame": "Hemograma Completo",
+      "data": "2026-09-25",
+      "hora": "07:30",
+      "convenio": "Unimed",
+      "status": "Agendado"
+    },
+    {
+      "id": "2",
+      "paciente": "João Souza",
+      "cpf": "987.654.321-11",
+      "exame": "Glicemia em Jejum",
+      "data": "2026-09-25",
+      "hora": "08:00",
+      "convenio": "Particular",
+      "status": "Em Atendimento"
+    },
+    {
+      "id": "3",
+      "paciente": "Ana Costa",
+      "cpf": "456.789.123-22",
+      "exame": "Perfil Lipídico",
+      "data": "2026-09-24",
+      "hora": "09:15",
+      "convenio": "Bradesco Saúde",
+      "status": "Concluído"
+    }
+  ],
+  "convenios": [
+    { "id": "1", "nome": "Particular", "codigo": "PART-01", "ativo": true },
+    { "id": "2", "nome": "Unimed", "codigo": "UNI-002", "ativo": true },
+    { "id": "3", "nome": "Bradesco Saúde", "codigo": "BRAD-101", "ativo": true },
+    { "id": "4", "nome": "Amil", "codigo": "AML-550", "ativo": true }
+  ]
+}

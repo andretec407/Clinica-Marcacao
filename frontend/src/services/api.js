@@ -1,18 +1,20 @@
-import {demoLogin,demoRequest} from './demoApi'
+﻿import {demoLogin,demoRequest} from './demoApi'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 async function request(path, options = {}) {
 	const token = localStorage.getItem('nassau_token')
-	if(path==='/auth/login'){
-		const credentials=JSON.parse(options.body||'{}')
-		const demo=demoLogin(credentials.email,credentials.password)
-		if(demo)return demo
+	if (path === '/auth/login') {
+		const credentials = JSON.parse(options.body || '{}')
+		const demo = demoLogin(credentials.email, credentials.password)
+		if (demo) return demo
 	}
-	if(token?.startsWith('demo:'))return demoRequest(path,options,token)
+	if (token?.startsWith('demo:')) return demoRequest(path, options, token)
+
 	const headers = { ...(options.headers || {}) }
 	if (!(options.body instanceof FormData)) headers['Content-Type'] = 'application/json'
-	if (token) headers.Authorization = `Bearer ${token}`
+	if (token) headers.Authorization = `Bearer ${token.replace(/^demo:/, '')}`
+
 	const response = await fetch(`${API_URL}${path}`, { ...options, headers })
 	const data = response.headers.get('content-type')?.includes('application/json')
 		? await response.json()

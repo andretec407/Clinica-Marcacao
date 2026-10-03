@@ -1,16 +1,168 @@
-import {useEffect,useState} from 'react';import {api} from '../services/api';import {useAuth} from '../context/AuthContext';import {clinicStatusLabels as statusLabels,clinicTimelineLabels as timelineLabels} from '../services/clinicLabels';import './Clinic.css'
-const examOptions=['Hemograma','Glicemia','TSH','Colesterol','Urina tipo 1','Outro exame']
-const blank={fullName:'',cpf:'',birthDate:'',email:'',phone:'',paymentType:'PARTICULAR',desiredDate:'',desiredTime:'',notes:''}
-export function PortalPaciente(){
- const {user}=useAuth();const [state,setState]=useState({appointments:[],notifications:[],form:{...blank,fullName:user.name,email:user.email},exams:[],otherExam:'',medicalOrder:null,message:'',error:'',busy:false})
- const set=(k,v)=>setState(s=>({...s,[k]:v}))
- const change=e=>setState(s=>({...s,form:{...s.form,[e.target.name]:e.target.value}}))
- const load=async()=>{try{const [mine,alerts]=await Promise.all([api.appointments(),api.notifications()]);setState(s=>({...s,appointments:mine.appointments,notifications:alerts.notifications,error:''}))}catch(e){setState(s=>({...s,error:e.message}))}}
- useEffect(()=>{load()},[])
- const toggleExam=v=>setState(s=>({...s,exams:s.exams.includes(v)?s.exams.filter(x=>x!==v):[...s.exams,v]}))
- const submit=async e=>{e.preventDefault();set('busy',true);set('error','');set('message','');try{const results=await api.createAppointment({values:{...state.form,exams:state.exams.map(x=>x==='Outro exame'?state.otherExam.trim():x).filter(Boolean)},medicalOrder:state.medicalOrder});set('message',`Solicitação criada com sucesso. Ticket: ${results.appointment.ticketNumber}`);setState(s=>({...s,form:{...blank,fullName:user.name,email:user.email},exams:[],otherExam:'',medicalOrder:null,busy:false}));e.target.reset();await load()}catch(e){set('error',e.message);set('busy',false)}}
- const openDocument=async(id,ticket)=>{try{const blob=await api.downloadDocument(id);const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`pedido-${ticket}`;a.click();URL.revokeObjectURL(url)}catch(e){set('error',e.message)}}
- const markRead=async id=>{await api.markNotificationRead(id);await load()}
- const openCount=state.appointments.filter(i=>!['CONCLUIDO','CANCELADO','FALTOU'].includes(i.status)).length
- return <div className="container page clinic-page"><header className="clinic-heading"><div><span className="eyebrow">ÁREA DO PACIENTE</span><h1>Olá, {user.name.split(' ')[0]}</h1><p>Acompanhe solicitações e atualizações da sua visita.</p></div></header>{state.message&&<div className="alert success">{state.message}</div>}{state.error&&<div className="alert error">{state.error}</div>}<section className="clinic-metrics" aria-label="Resumo das solicitações"><article><span>Solicitações</span><strong>{state.appointments.length}</strong></article><article><span>Em aberto</span><strong>{openCount}</strong></article><article><span>Concluídas</span><strong>{state.appointments.filter(i=>i.status==='CONCLUIDO').length}</strong></article></section><div className="patient-layout"><section className="clinic-section"><div className="clinic-section-head"><div><span className="eyebrow">NOVA SOLICITAÇÃO</span><h2>Solicitar exame</h2></div></div><form className="clinic-form" onSubmit={submit}><label>Nome completo<input name="fullName" value={state.form.fullName} onChange={change} required/></label><div className="clinic-form-row"><label>CPF<input name="cpf" value={state.form.cpf} onChange={change} inputMode="numeric" maxLength="14" required/></label><label>Data de nascimento<input name="birthDate" type="date" value={state.form.birthDate} onChange={change} required/></label></div><label>E-mail<input name="email" type="email" value={state.form.email} onChange={change} required/></label><div className="clinic-form-row"><label>Telefone<input name="phone" type="tel" value={state.form.phone} onChange={change} required/></label><label>Pagamento<select name="paymentType" value={state.form.paymentType} onChange={change}><option value="PARTICULAR">Particular</option><option value="CONVENIO">Convênio</option></select></label></div><fieldset><legend>Exames solicitados</legend><div className="exam-options">{examOptions.map(exam=><label key={exam}><input type="checkbox" checked={state.exams.includes(exam)} onChange={()=>toggleExam(exam)}/>{exam}</label>)}</div></fieldset>{state.exams.includes('Outro exame')&&<label>Descreva o exame<input value={state.otherExam} onChange={e=>set('otherExam',e.target.value)} required/></label>}<div className="clinic-form-row"><label>Data desejada<input name="desiredDate" type="date" min={new Date().toISOString().slice(0,10)} value={state.form.desiredDate} onChange={change} required/></label><label>Horário desejado<input name="desiredTime" type="time" value={state.form.desiredTime} onChange={change} required/></label></div><label>Observações<textarea name="notes" value={state.form.notes} onChange={change} rows="3" maxLength="1000"/></label><label>Pedido médico (PDF, JPG ou PNG)<input type="file" accept="application/pdf,image/jpeg,image/png" onChange={e=>set('medicalOrder',e.target.files?.[0]||null)}/><small>Máximo de 5 MB.</small></label><button className="btn primary" disabled={state.busy||!state.exams.length||(state.exams.includes('Outro exame')&&!state.otherExam.trim())}>{state.busy?'Enviando…':'Solicitar exame'}</button></form></section><div className="patient-side"><section className="clinic-section"><div className="clinic-section-head"><div><span className="eyebrow">AVISOS</span><h2>Notificações</h2></div><span className="clinic-count">{state.notifications.filter(x=>!x.is_read).length}</span></div>{state.notifications.length?<ul className="notification-list">{state.notifications.slice(0,6).map(item=><li key={item.id} className={item.is_read?'is-read':''}><div><strong>{item.title}</strong><p>{item.message}</p><small>{new Date(item.created_at).toLocaleString('pt-BR')}</small></div>{!item.is_read&&<button className="link-button" onClick={()=>markRead(item.id)}>Marcar lida</button>}</li>)}</ul>:<p className="empty-state">Nenhuma notificação no momento.</p>}</section><section className="clinic-section"><div className="clinic-section-head"><div><span className="eyebrow">HISTÓRICO</span><h2>Minhas solicitações</h2></div></div>{state.appointments.length?<div className="appointment-list">{state.appointments.map(item=><article className="appointment-item" key={item.id}><div className="appointment-title"><strong>#{item.ticket_number}</strong><span className={`status-pill status-${item.status.toLowerCase()}`}>{statusLabels[item.status]||item.status}</span></div><p>{(typeof item.exams==='string'?JSON.parse(item.exams):item.exams).join(', ')}</p><div className="appointment-meta"><span>{new Date(`${item.desired_date}T00:00:00`).toLocaleDateString('pt-BR')}</span><span>{String(item.desired_time).slice(0,5)}</span></div>{item.staff_note&&<p className="staff-note"><strong>Observação da equipe:</strong> {item.staff_note}</p>}{item.document_path&&<button className="link-button" onClick={()=>openDocument(item.id,item.ticket_number)}>Baixar pedido médico</button>}<details><summary>Detalhes e histórico</summary><ol className="timeline">{item.history?.map(event=><li key={event.id}><strong>{timelineLabels[event.status]||event.status}</strong><time>{new Date(event.created_at).toLocaleString('pt-BR')}</time>{event.note&&<span>{event.note}</span>}</li>)}</ol></details></article>)}</div>:<p className="empty-state">Você ainda não possui solicitações.</p>}</section></div></div></div>
+﻿import { useEffect, useState } from 'react'
+import { api } from '../services/api'
+
+const examOptions = ['Hemograma', 'Glicemia', 'TSH', 'Colesterol', 'Urina', 'PCR']
+
+export function PortalPaciente() {
+  const [appointments, setAppointments] = useState([])
+  const [notifications, setNotifications] = useState([])
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [selectedExams, setSelectedExams] = useState([])
+  const [form, setForm] = useState({
+    desiredDate: new Date().toISOString().slice(0, 10),
+    desiredTime: '09:00',
+    notes: ''
+  })
+
+  async function load() {
+    try {
+      const [appointmentData, notificationData] = await Promise.all([
+        api.appointments(),
+        api.notifications(),
+      ])
+      setAppointments(appointmentData.appointments || [])
+      setNotifications(notificationData.notifications || [])
+      setError('')
+    } catch (problem) {
+      setError(problem.message)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  function toggleExam(exam) {
+    setSelectedExams(current =>
+      current.includes(exam)
+        ? current.filter(item => item !== exam)
+        : [...current, exam]
+    )
+  }
+
+  async function submitRequest(event) {
+    event.preventDefault()
+    if (!selectedExams.length) {
+      setError('Selecione pelo menos um exame para solicitar.')
+      return
+    }
+
+    setBusy(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const user = JSON.parse(localStorage.getItem('nassau_user') || '{}')
+      const values = {
+        fullName: user.name || 'Paciente Demo',
+        cpf: user.cpf || '12345678909',
+        birthDate: user.birthDate || '1995-01-01',
+        email: user.email || 'paciente@demo.local',
+        phone: user.phone || '(11) 99999-0000',
+        paymentType: user.paymentType || 'PARTICULAR',
+        exams: selectedExams,
+        desiredDate: form.desiredDate,
+        desiredTime: form.desiredTime,
+        notes: form.notes
+      }
+
+      const result = await api.createAppointment({ values })
+      setSuccess(result.message || 'Solicitação criada com sucesso.')
+      setSelectedExams([])
+      setForm({ desiredDate: new Date().toISOString().slice(0, 10), desiredTime: '09:00', notes: '' })
+      await load()
+    } catch (problem) {
+      setError(problem.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="container page">
+      <div className="section-head">
+        <div>
+          <span className="eyebrow">ÁREA DO PACIENTE</span>
+          <h1>Minha área</h1>
+        </div>
+      </div>
+
+      {error && <div className="alert error">{error}</div>}
+      {success && <div className="alert success">{success}</div>}
+
+      <div className="panel" style={{ marginBottom: '18px' }}>
+        <h2>Solicitar exames</h2>
+        <form className="form" onSubmit={submitRequest}>
+          <div>
+            <p style={{ margin: '0 0 10px', fontWeight: 700 }}>Exames</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              {examOptions.map(exam => (
+                <label key={exam} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', minWidth: '120px' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedExams.includes(exam)}
+                    onChange={() => toggleExam(exam)}
+                  />
+                  {exam}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <label>
+              Data desejada
+              <input type="date" value={form.desiredDate} onChange={event => setForm(current => ({ ...current, desiredDate: event.target.value }))} required />
+            </label>
+            <label>
+              Hora desejada
+              <input type="time" value={form.desiredTime} onChange={event => setForm(current => ({ ...current, desiredTime: event.target.value }))} required />
+            </label>
+          </div>
+
+          <label>
+            Observações
+            <textarea
+              rows={4}
+              value={form.notes}
+              onChange={event => setForm(current => ({ ...current, notes: event.target.value }))}
+              placeholder="Se necessário, descreva alguma observação"
+            />
+          </label>
+
+          <button className="btn primary" type="submit" disabled={busy}>
+            {busy ? 'Enviando…' : 'Solicitar exames'}
+          </button>
+        </form>
+      </div>
+
+      <div className="panel" style={{ marginBottom: '18px' }}>
+        <h2>Notificações</h2>
+        {notifications.length ? notifications.map(item => (
+          <div key={item.id} className="notification-item" style={{ padding: '10px 0', borderBottom: '1px solid #dce8e5' }}>
+            <strong>{item.title}</strong>
+            <p>{item.message}</p>
+          </div>
+        )) : <p>Nenhuma notificação.</p>}
+      </div>
+
+      <div className="panel">
+        <h2>Meus exames e solicitações</h2>
+        {appointments.length ? appointments.map(item => (
+          <div key={item.id} className="appointment-row" style={{ padding: '14px 0', borderBottom: '1px solid #dce8e5' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <strong>{item.ticket_number || 'Solicitação sem código'}</strong>
+              <span className={`status ${String(item.status || '').toLowerCase()}`}>{item.status || 'PENDENTE'}</span>
+            </div>
+            <div style={{ marginTop: '8px', color: '#476660', lineHeight: 1.7 }}>
+              <div><strong>Exames:</strong> {(item.exams || []).join(', ') || '—'}</div>
+              <div><strong>Data desejada:</strong> {item.desired_date ? new Date(`${item.desired_date}T00:00:00`).toLocaleDateString('pt-BR') : '—'}</div>
+              <div><strong>Horário:</strong> {item.desired_time || '—'}</div>
+              <div><strong>Observações:</strong> {item.notes || 'Sem observações.'}</div>
+            </div>
+          </div>
+        )) : <p>Nenhum exame cadastrado.</p>}
+      </div>
+    </div>
+  )
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { demoAccounts } from '../services/demoApi'
@@ -7,7 +7,6 @@ import './Login.css'
 const roleLabels = {
   PACIENTE: 'Paciente',
   ATENDENTE: 'Atendente',
-  ADMINISTRADOR: 'Administrador',
 }
 
 export function Login() {
@@ -44,7 +43,7 @@ export function Login() {
         <form className="panel form" onSubmit={submit}>
           <span className="eyebrow">ACESSO AO LABORATÓRIO</span>
           <h1>Entrar na sua conta</h1>
-          <p>Paciente, atendente ou administrador.</p>
+          <p>Paciente ou atendente.</p>
 
           {error && <div className="alert error">{error}</div>}
 

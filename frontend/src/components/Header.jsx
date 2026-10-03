@@ -1,3 +1,40 @@
-import {NavLink,Link,useNavigate} from 'react-router-dom';import {useAuth} from '../context/AuthContext'
-const roleNames={PACIENTE:'Paciente',ATENDENTE:'Atendente',GESTOR:'Administrador',ADMINISTRADOR:'Administrador'}
-export function Header(){const {user,logout}=useAuth();const navigate=useNavigate();return <header className="topbar"><div className="topbar-inner"><Link to="/" className="brand"><span>nassau<strong>Tickets</strong></span></Link><nav className="nav"><NavLink to="/painel">Painel</NavLink><NavLink to="/totem">Totem</NavLink>{user?.role==='PACIENTE'&&<NavLink to="/paciente">Minha área</NavLink>}{['ATENDENTE','GESTOR','ADMINISTRADOR'].includes(user?.role)&&<><NavLink to="/fluxo">Fluxo clínico</NavLink><NavLink to="/atendimento">Senhas</NavLink></>}{['GESTOR','ADMINISTRADOR'].includes(user?.role)&&<><NavLink to="/relatorios">Relatórios</NavLink><NavLink to="/usuarios">Usuários</NavLink></>}</nav><div className="user-area">{user?<><span>{user.name} · {roleNames[user.role]||user.role}</span><button onClick={()=>{logout();navigate('/login')}}>Sair</button></>:<><Link to="/login">Área do paciente</Link><Link className="btn small" to="/login">Entrar</Link></>}</div></div></header>}
+﻿import { NavLink, Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
+
+const roleNames = {
+  PACIENTE: 'Paciente',
+  ATENDENTE: 'Atendente',
+}
+
+export function Header() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  return (
+    <header className="topbar">
+      <div className="topbar-inner">
+        <Link to="/" className="brand"><span>nassau<strong>Tickets</strong></span></Link>
+        <nav className="nav">
+          <NavLink to="/painel">Painel</NavLink>
+          <NavLink to="/totem">Totem</NavLink>
+          {user?.role === 'PACIENTE' && <NavLink to="/paciente">Minha área</NavLink>}
+          {user?.role === 'ATENDENTE' && <>
+            <NavLink to="/fluxo">Fluxo clínico</NavLink>
+            <NavLink to="/atendimento">Senhas</NavLink>
+            <NavLink to="/relatorios">Relatórios</NavLink>
+            <NavLink to="/usuarios">Usuários</NavLink>
+          </>}
+        </nav>
+        <div className="user-area">
+          {user ? <>
+            <span>{user.name} · {roleNames[user.role] || user.role}</span>
+            <button onClick={() => { logout(); navigate('/login') }}>Sair</button>
+          </> : <>
+            <Link to="/login">Área do paciente</Link>
+            <Link className="btn small" to="/login">Entrar</Link>
+          </>}
+        </div>
+      </div>
+    </header>
+  )
+}

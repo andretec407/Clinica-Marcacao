@@ -1,12 +1,10 @@
-import 'dotenv/config'
+﻿import 'dotenv/config'
 import { randomUUID } from 'node:crypto'
 import { pool } from './db.js'
 import { hashPassword } from './auth.js'
 
 const users = [
   { name: 'Atendente Demo', email: 'atendente@demo.local', password: 'Atendente123!', role: 'ATENDENTE' },
-  { name: 'Gestor Demo', email: 'gestor@demo.local', password: 'Gestor123!', role: 'GESTOR' },
-  { name: 'Administrador Demo', email: 'admin@demo.local', password: 'Admin12345!', role: 'ADMINISTRADOR' },
   { name: 'Paciente Demo', email: 'paciente@demo.local', password: 'Paciente123!', role: 'PACIENTE' }
 ]
 

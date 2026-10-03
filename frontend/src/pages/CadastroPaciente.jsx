@@ -1,28 +1,14 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import './Clinic.css'
-
-const initial = {
-  fullName: '',
-  cpf: '',
-  birthDate: '',
-  email: '',
-  phone: '',
-  paymentType: 'PARTICULAR',
-  password: '',
-}
+﻿import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { api } from '../services/api'
 
 export function CadastroPaciente() {
-  const [form, setForm] = useState(initial)
+  const navigate = useNavigate()
+  const [form, setForm] = useState({ fullName: '', cpf: '', birthDate: '', email: '', phone: '', password: '', paymentType: 'PARTICULAR' })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const { registerPatient } = useAuth()
-  const navigate = useNavigate()
 
-  function change(event) {
-    setForm({ ...form, [event.target.name]: event.target.value })
-  }
+  const change = (field, value) => setForm(previous => ({ ...previous, [field]: value }))
 
   async function submit(event) {
     event.preventDefault()
@@ -30,7 +16,9 @@ export function CadastroPaciente() {
     setBusy(true)
 
     try {
-      await registerPatient({ ...form, cpf: form.cpf.replace(/\D/g, '') })
+      const data = await api.registerPatient(form)
+      localStorage.setItem('nassau_token', data.token)
+      localStorage.setItem('nassau_user', JSON.stringify(data.user))
       navigate('/paciente')
     } catch (problem) {
       setError(problem.message)
@@ -40,62 +28,30 @@ export function CadastroPaciente() {
   }
 
   return (
-    <div className="container page clinic-page">
-      <form className="clinic-form clinic-form-narrow" onSubmit={submit}>
-        <span className="eyebrow">ÁREA DO PACIENTE</span>
-        <h1>Criar cadastro</h1>
-        <p>Use seus dados para acompanhar solicitações e atualizações do laboratório.</p>
-
-        {error && <div className="alert error">{error}</div>}
-
-        <label>
-          Nome completo
-          <input name="fullName" value={form.fullName} onChange={change} autoComplete="name" required maxLength="160" />
-        </label>
-
-        <div className="clinic-form-row">
-          <label>
-            CPF
-            <input name="cpf" value={form.cpf} onChange={change} inputMode="numeric" minLength="11" maxLength="14" required />
-          </label>
-
-          <label>
-            Data de nascimento
-            <input name="birthDate" type="date" value={form.birthDate} onChange={change} required />
-          </label>
+    <div className="container page">
+      <div className="section-head">
+        <div>
+          <span className="eyebrow">CADASTRO</span>
+          <h1>Cadastro do paciente</h1>
         </div>
+      </div>
 
-        <label>
-          E-mail
-          <input name="email" type="email" value={form.email} onChange={change} autoComplete="email" required />
+      {error && <div className="alert error">{error}</div>}
+
+      <form className="panel form" onSubmit={submit}>
+        <label>Nome completo<input value={form.fullName} onChange={e => change('fullName', e.target.value)} required /></label>
+        <label>CPF<input value={form.cpf} onChange={e => change('cpf', e.target.value)} required /></label>
+        <label>Data de nascimento<input type="date" value={form.birthDate} onChange={e => change('birthDate', e.target.value)} required /></label>
+        <label>E-mail<input type="email" value={form.email} onChange={e => change('email', e.target.value)} required /></label>
+        <label>Telefone<input value={form.phone} onChange={e => change('phone', e.target.value)} required /></label>
+        <label>Senha<input type="password" value={form.password} onChange={e => change('password', e.target.value)} required minLength={8} /></label>
+        <label>Tipo de pagamento
+          <select value={form.paymentType} onChange={e => change('paymentType', e.target.value)}>
+            <option value="PARTICULAR">Particular</option>
+            <option value="CONVENIO">Convênio</option>
+          </select>
         </label>
-
-        <div className="clinic-form-row">
-          <label>
-            Telefone
-            <input name="phone" type="tel" value={form.phone} onChange={change} autoComplete="tel" required />
-          </label>
-
-          <label>
-            Pagamento
-            <select name="paymentType" value={form.paymentType} onChange={change}>
-              <option value="PARTICULAR">Particular</option>
-              <option value="CONVENIO">Convênio</option>
-            </select>
-          </label>
-        </div>
-
-        <label>
-          Senha
-          <input name="password" type="password" value={form.password} onChange={change} minLength="8" autoComplete="new-password" required />
-          <small>Use ao menos 8 caracteres.</small>
-        </label>
-
-        <button className="btn primary" disabled={busy}>
-          {busy ? 'Criando cadastro…' : 'Criar cadastro'}
-        </button>
-
-        <Link to="/login">Já tenho uma conta</Link>
+        <button className="btn primary" type="submit" disabled={busy}>{busy ? 'Cadastrando…' : 'Cadastrar'}</button>
       </form>
     </div>
   )

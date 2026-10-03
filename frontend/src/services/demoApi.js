@@ -1,12 +1,10 @@
 const STORAGE_KEY = 'nassau_demo_state'
 const PATIENT_ID = 'demo-patient'
 const STAFF_ID = 'demo-staff'
-const ADMIN_ID = 'demo-admin'
 
 export const demoAccounts = [
   { email: 'paciente@demo.local', password: 'Paciente123!', user: { id: PATIENT_ID, name: 'Maria da Silva', email: 'paciente@demo.local', role: 'PACIENTE' } },
   { email: 'atendente@demo.local', password: 'Atendente123!', user: { id: STAFF_ID, name: 'Atendente Demo', email: 'atendente@demo.local', role: 'ATENDENTE' } },
-  { email: 'admin@demo.local', password: 'Admin12345!', user: { id: ADMIN_ID, name: 'Administrador Demo', email: 'admin@demo.local', role: 'ADMINISTRADOR' } }
 ]
 
 const now = () => new Date().toISOString()
@@ -96,11 +94,9 @@ export async function demoRequest(path, options, token) {
   const method = options.method || 'GET'
   const data = bodyData(options.body)
   const state = getState()
-  const clinicStaff = ['ATENDENTE', 'GESTOR', 'ADMINISTRADOR'].includes(role)
-  const admin = ['GESTOR', 'ADMINISTRADOR'].includes(role)
+  const clinicStaff = role === 'ATENDENTE'
   const patientOwns = item => item?.patient_user_id === userId
   const requireStaff = () => { if (!clinicStaff) throw new Error('Perfil sem permissão para esta operação.') }
-  const requireAdmin = () => { if (!admin) throw new Error('Perfil sem permissão para esta operação.') }
   const getAppointment = id => {
     const item = appointmentFor(state, id)
     if (!item) throw new Error('Solicitação não encontrada.')
@@ -133,7 +129,6 @@ export async function demoRequest(path, options, token) {
     if (role !== 'PACIENTE') throw new Error('Esta ação é exclusiva para pacientes.')
     const exams = typeof data.exams === 'string' ? JSON.parse(data.exams) : data.exams
     if (!exams?.length) throw new Error('Informe ao menos um exame.')
-    const account = demoAccounts.find(item => item.user.id === userId)
     const appointment = {
       id: crypto.randomUUID(), ticket_number: `A${state.nextTicket++}`, patient_id: userId, patient_user_id: userId,
       full_name: data.fullName, cpf: String(data.cpf).replace(/\D/g, ''), birth_date: data.birthDate,
@@ -216,7 +211,7 @@ export async function demoRequest(path, options, token) {
   }
 
   if (route === '/reports/clinic') {
-    requireAdmin()
+    requireStaff()
     const completed = state.appointments.filter(item => item.status === 'CONCLUIDO')
     const current = state.appointments
     return {
@@ -235,17 +230,17 @@ export async function demoRequest(path, options, token) {
     }
   }
   if (route === '/reports/summary') {
-    requireAdmin()
+    requireStaff()
     const tickets = state.legacyTickets
     return { emitted: tickets.length, attended: tickets.filter(item => item.status === 'ATENDIDA').length,
       abandoned: tickets.filter(item => item.status === 'NAO_COMPARECEU').length, average_minutes: 7,
       by_type: { SP: { emitted: 1, attended: 1 }, SE: { emitted: 1, attended: 0 }, SG: { emitted: 1, attended: 0 } } }
   }
-  if (route === '/reports/tickets') { requireAdmin(); return { tickets: clone(state.legacyTickets) } }
-  if (route === '/reports/audit') { requireAdmin(); return { audit: [] } }
-  if (route === '/users' && method === 'GET') { requireAdmin(); return { users: clone(state.users) } }
+  if (route === '/reports/tickets') { requireStaff(); return { tickets: clone(state.legacyTickets) } }
+  if (route === '/reports/audit') { requireStaff(); return { audit: [] } }
+  if (route === '/users' && method === 'GET') { requireStaff(); return { users: clone(state.users) } }
   if (route === '/users' && method === 'POST') {
-    requireAdmin()
+    requireStaff()
     const user = { id: crypto.randomUUID(), name: data.name, email: data.email, role: data.role || 'ATENDENTE', active: true, created_at: now() }
     state.users.push(user); saveState(state); return user
   }

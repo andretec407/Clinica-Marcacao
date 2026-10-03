@@ -1,8 +1,8 @@
-import jwt from 'jsonwebtoken'
+﻿import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 
 const secret = process.env.JWT_SECRET || 'dev-secret-change-me-before-deployment'
-const validRoles = ['PACIENTE', 'ATENDENTE', 'GESTOR', 'ADMINISTRADOR']
+const validRoles = ['PACIENTE', 'ATENDENTE']
 
 export const hashPassword = password => bcrypt.hash(password, 12)
 export const comparePassword = (password, hash) => bcrypt.compare(password, hash)
@@ -27,8 +27,7 @@ export function auth(req, res, next) {
 
 export function requireRole(...roles) {
   return (req, res, next) => {
-    const expandedRoles = roles.includes('GESTOR') ? [...roles, 'ADMINISTRADOR'] : roles
-    if (!validRoles.includes(req.user?.role) || !expandedRoles.includes(req.user.role)) {
+    if (!validRoles.includes(req.user?.role) || !roles.includes(req.user.role)) {
       return res.status(403).json({ message: 'Perfil sem permissão para esta operação.' })
     }
     next()

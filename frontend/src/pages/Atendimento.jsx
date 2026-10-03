@@ -1,0 +1,132 @@
+import { useEffect, useState } from 'react'
+import { api } from '../services/api'
+import { StatusBadge } from '../components/StatusBadge'
+
+export function Atendimento() {
+  const [queue, setQueue] = useState({ waiting: [], current: null, history: [] })
+  const [counter, setCounter] = useState(1)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  async function load() {
+    try {
+      setQueue(await api.queue())
+      setError('')
+    } catch (problem) {
+      setError(problem.message)
+    }
+  }
+
+  useEffect(() => {
+    load()
+    const id = setInterval(load, 3000)
+    return () => clearInterval(id)
+  }, [])
+
+  function speak(text) {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel()
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(text))
+    }
+  }
+
+  async function action(fn, successMessage, speech) {
+    setMessage('')
+    setError('')
+
+    try {
+      const result = await fn()
+      if (speech) speak(speech(result))
+      setMessage(successMessage)
+      await load()
+    } catch (problem) {
+      setError(problem.message)
+    }
+  }
+
+  return (
+    <div className="container page">
+      <div className="section-head">
+        <div>
+          <span className="eyebrow">TERMINAL DO ATENDENTE</span>
+          <h1>Fila de atendimento</h1>
+          <p>
+            Guichê
+            <select value={counter} onChange={event => setCounter(Number(event.target.value))}>
+              <option value={1}>1</option>
+              <option value={2}>2</option>
+              <option value={3}>3</option>
+              <option value={4}>4</option>
+            </select>
+          </p>
+        </div>
+
+        <button
+          className="btn primary"
+          onClick={() => action(
+            () => api.next(counter),
+            'Próxima senha chamada.',
+            ticket => `Senha ${ticket.ticket.type}, ${ticket.ticket.number}, dirigir-se ao guichê ${ticket.ticket.counter}.`
+          )}
+        >
+          Chamar próxima
+        </button>
+      </div>
+
+      {message && <div className="alert success">{message}</div>}
+      {error && <div className="alert error">{error}</div>}
+
+      <div className="operator-grid">
+        <section className="panel">
+          <h2>Em atendimento</h2>
+
+          {queue.current ? (
+            <div className="current">
+              <span>{queue.current.number}</span>
+              <StatusBadge status={queue.current.status} />
+
+              <div className="actions">
+                {['CHAMADA', 'CHAMADA_NOVAMENTE'].includes(queue.current.status) && (
+                  <button className="btn primary" onClick={() => action(() => api.start(queue.current.id), 'Atendimento iniciado.')}>Iniciar atendimento</button>
+                )}
+
+                {queue.current.status === 'EM_ATENDIMENTO' && (
+                  <button className="btn primary" onClick={() => action(() => api.finish(queue.current.id), 'Atendimento finalizado.')}>Finalizar atendimento</button>
+                )}
+
+                {['CHAMADA', 'CHAMADA_NOVAMENTE'].includes(queue.current.status) && queue.current.call_count < 2 && (
+                  <button
+                    className="btn ghost"
+                    onClick={() => action(
+                      () => api.repeat(queue.current.id),
+                      'Senha chamada novamente.',
+                      ticket => `Última chamada. Senha ${ticket.ticket.type}, ${ticket.ticket.number}, dirigir-se ao guichê ${ticket.ticket.counter}.`
+                    )}
+                  >
+                    Chamar novamente
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="muted">Nenhum atendimento ativo.</p>
+          )}
+        </section>
+
+        <section className="panel">
+          <h2>Aguardando</h2>
+          <div className="queue-list">
+            {queue.waiting.map(ticket => (
+              <div key={ticket.id}>
+                <strong>{ticket.number}</strong>
+                <span>{ticket.type}</span>
+              </div>
+            ))}
+
+            {!queue.waiting.length && <p className="muted">Fila vazia.</p>}
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+}

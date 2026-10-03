@@ -1,0 +1,1 @@
+export function StatusBadge({status}){const labels={EMITIDA:'Emitida',AGUARDANDO:'Aguardando',CHAMADA:'Chamada',CHAMADA_NOVAMENTE:'Última chamada',EM_ATENDIMENTO:'Em atendimento',ATENDIDA:'Atendida',NAO_COMPARECEU:'Não compareceu'};return <span className={`status ${status?.toLowerCase()}`}>{labels[status]||status}</span>}

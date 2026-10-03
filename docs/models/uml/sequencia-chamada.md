@@ -3,7 +3,7 @@
 ```mermaid
 sequenceDiagram
     participant AA1 as Atendente A
-    participant API as API Express
+    participant API as Node.js / Express
     participant DB as MySQL
     participant AA2 as Atendente B
 

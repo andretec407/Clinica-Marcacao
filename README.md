@@ -2,25 +2,18 @@
 
 Sistema de Controle de Atendimento para um Laboratório de Análises Clínicas.
 
-## Objetivo
+## Visão geral
 
-Controlar a emissão, priorização, chamada e atendimento de senhas, com painel público, terminal do atendente, relatórios e auditoria.
+Sistema para gerenciar cadastro e exames de pacientes, fila, atendimento,
+coleta, saída, senhas públicas, relatórios e auditoria.
 
-## Tecnologias
+**Tecnologias:** React 19 + Vite, Node.js 22 + Express, MySQL 8, JWT e bcrypt.
+O frontend usa a API interna do backend; não há serviços externos.
 
-- Frontend: React 19 + Vite
-- Backend: Node.js 22 + Express
-- Banco: MySQL 8.0
-- Autenticação: JWT + bcrypt
-- API: REST/JSON
+`Paciente / Atendente / Administrador / Totem / Painel → React → Node.js + Express → MySQL`
 
-A escolha de Node.js + Express segue uma das infraestruturas indicadas no enunciado. O frontend permanece em React, conforme exigido.
-
-## Arquitetura
-
-`Totem / Atendente / Painel / Gestor → React → API Express → MySQL`
-
-A emissão do ticket é anônima. O atendente utiliza login e o gestor possui permissões administrativas e de relatórios.
+A emissão pública de senhas é anônima. Pacientes acompanham solicitações após
+login; a equipe opera a fila; gestores e administradores acessam relatórios e usuários.
 
 ## Estrutura
 
@@ -51,79 +44,80 @@ nassauTickets/
 
 > Substituam os placeholders antes da entrega. A atividade exige que a seção se chame exatamente `## Membros`.
 
-## Regras principais
+## Funcionalidades
 
-- Expediente: 07:00–17:00.
-- Tipos: SP, SE e SG.
-- Ciclo de prioridade: SP → SE/SG → SP → SE/SG.
-- Qualquer guichê atende qualquer tipo.
-- Após duas chamadas sem comparecimento, o ticket é marcado como `NAO_COMPARECEU`.
-- O painel exibe as cinco últimas senhas chamadas, sem exibir a próxima senha.
-- Numeração: `YYMMDD-PPSQ`, com sequência de três dígitos reiniciada diariamente por tipo.
-- Estados: `EMITIDA → AGUARDANDO → CHAMADA → CHAMADA_NOVAMENTE → EM_ATENDIMENTO → ATENDIDA`, com saída para `NAO_COMPARECEU`.
-
-Essas regras são derivadas da especificação fornecida na atividade.
+- Senhas SP/SE/SG: expediente 07:00–17:00, prioridade alternada, sequência diária
+  por tipo, painel com cinco últimas chamadas e registro de faltas.
+- Exames: cadastro/login, solicitação e anexo médico, agendamento, fila por
+  chegada, coleta, saída, histórico e notificações.
+- Acesso por perfil, relatórios, métricas e auditoria.
+- Regras completas: [regras de negócio](docs/requirements/regras-negocio.md);
+  requisitos: [requisitos](docs/requirements/requisitos.md).
 
 ## Backend
 
-```bash
-cd backend
-cp .env.example .env
+```powershell
+Set-Location backend
+Copy-Item .env.example .env
 npm install
-# crie o banco usando backend/sql/schema.sql
 npm run seed
 npm run dev
 ```
 
+Antes do `seed`, crie o banco usando `backend/sql/schema.sql`.
+
 Variáveis obrigatórias em `.env`:
 
 ```env
-PORT=3000
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=nassau_tickets
 DB_USER=root
 DB_PASSWORD=sua_senha
-JWT_SECRET=troque-esta-chave
-CORS_ORIGIN=http://localhost:5173
+JWT_SECRET=use-uma-chave-aleatoria-longa
+CORS_ORIGIN=http://localhost:5174
+ENFORCE_BUSINESS_HOURS=true
 ```
 
-Usuários de demonstração após `npm run seed`:
+Usuários de demonstração criados por `npm run seed`:
 
 - Atendente: `atendente@demo.local` / `Atendente123!`
 - Gestor: `gestor@demo.local` / `Gestor123!`
+- Administrador: `admin@demo.local` / `Admin12345!`
+- Paciente: `paciente@demo.local` / `Paciente123!`
 
-Troque essas credenciais em um ambiente real. Para testes fora do expediente, pode-se usar `ENFORCE_BUSINESS_HOURS=false`; na entrega acadêmica, mantenha `true` para refletir a regra das 07:00 às 17:00.
+Troque essas credenciais e a chave JWT em um ambiente real. Para testes fora do expediente, pode-se usar `ENFORCE_BUSINESS_HOURS=false`; na entrega acadêmica, mantenha `true` para refletir a regra das 07:00 às 17:00.
 
 ## Frontend
 
-```bash
-cd frontend
+Na pasta `frontend`:
+
+```powershell
 npm install
 npm run dev
 ```
 
-O frontend utiliza `VITE_API_URL=http://localhost:3000/api` por padrão. Para alterar, crie `frontend/.env`.
+O frontend inicia em `http://localhost:5174` (`VITE_API_URL` usa
+`http://localhost:3000/api` por padrão).
+
+## Demonstração sem MySQL
+
+Inicie o frontend e abra `http://localhost:5174/login`. As contas de exemplo:
+
+- Paciente: `paciente@demo.local` / `Paciente123!`
+- Atendente: `atendente@demo.local` / `Atendente123!`
+- Administrador: `admin@demo.local` / `Admin12345!`
+
+O modo demo salva alterações apenas neste navegador; para reiniciá-lo, remova
+`nassau_demo_state` do armazenamento local. Essas contas não criam usuários no
+banco e não devem ser usadas em produção.
 
 ## Branches e versionamento
 
-A entrega deve possuir as branches `main` e `dev`. O desenvolvimento deve ocorrer primeiro em `dev`, seguido de merge para `main`, mantendo o histórico.
-
-Exemplos de commits:
-
-```text
-chore: cria estrutura inicial do projeto
-feat: implementa emissão de senhas
-feat: implementa fila e concorrência
-feat: implementa painel de chamadas
-feat: adiciona relatórios e auditoria
-docs: adiciona requisitos e diagramas
-```
+A entrega acadêmica mantém as branches `dev` e `main`, integrando `dev` em
+`main` por merge.
 
 ## Documentação
 
-Os requisitos, regras de negócio, modelo de dados e diagramas estão em `docs/`. O enunciado também exige atenção a segurança, disponibilidade, auditoria, desempenho, concorrência, LGPD e acessibilidade.
-
-Entrega acadêmica: desenvolvimento realizado em dev e integrado a main.
-
-> Desenvolvimento realizado na branch `dev` e integrado por merge na `main`.
+Requisitos, regras, modelo de dados, mockups e diagramas estão em `docs/`,
+incluindo segurança, LGPD e acessibilidade.

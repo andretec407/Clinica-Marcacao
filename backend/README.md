@@ -1,19 +1,21 @@
-# Backend — nassauTickets
+# Backend
 
-API REST em Node.js 22 + Express com MySQL 8.0.
+Node.js 22, Express 5 e MySQL 8. O backend oferece autenticação por perfil,
+fluxo de exames, fila de senhas, relatórios, auditoria e notificações. As
+chamadas são internas ao frontend; não há serviços externos. Erros de rotas
+assíncronas são encaminhados pelo Express ao middleware comum.
 
-## Responsabilidades
+## Executar (PowerShell)
 
-- autenticação e autorização;
-- emissão anônima de tickets;
-- numeração diária por prioridade;
-- fila com regra SP → SE/SG → SP → SE/SG;
-- controle da máquina de estados;
-- tratamento de concorrência com transações e `SELECT ... FOR UPDATE`;
-- auditoria;
-- relatórios diário/mensal (a API mantém o resumo diário e o histórico detalhado);
-- cadastro de usuários pelo gestor.
+Na pasta `backend`, crie o banco usando `sql/schema.sql` e rode:
 
-## Segurança
+```powershell
+Copy-Item .env.example .env
+npm install
+npm run seed
+npm run dev
+```
 
-Senhas são armazenadas com bcrypt. Endpoints operacionais exigem JWT e perfil adequado. Helmet, CORS e limite de corpo JSON são aplicados no servidor.
+Configure as credenciais do MySQL e `JWT_SECRET` no `.env`. Para produção,
+inicie com `npm start`. Senhas usam bcrypt, rotas usam JWT e perfil, anexos
+médicos ficam em `uploads/` e o CORS usa `CORS_ORIGIN`.

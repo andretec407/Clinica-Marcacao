@@ -1,12 +1,15 @@
 # Mockups funcionais
 
-As telas implementadas no frontend correspondem a estes fluxos:
+As telas implementadas no frontend cobrem os fluxos abaixo:
 
-- Home: entrada para Totem e Painel.
-- Totem: três opções SP, SE e SG.
-- Painel: chamada atual + cinco últimas.
-- Atendimento: guichê, chamada, iniciar, repetir e finalizar.
-- Relatórios: resumo, senhas e auditoria.
-- Usuários: cadastro restrito ao gestor.
+- Home: acesso ao totem, painel público e login/cadastro.
+- Login e cadastro: entrada por e-mail e senha; o perfil é determinado pelo backend.
+- Portal do paciente: resumo de solicitações, novo pedido de exame, anexo médico, notificações e histórico com timeline.
+- Fluxo clínico: dashboard da equipe, solicitações pendentes, busca por CPF/nome/ticket/data de nascimento, fila e ações por estado.
+- Recepção: confirmação do pedido/agendamento e registro de chegada.
+- Atendimento e coleta: chamada, início, encaminhamento para coleta, coleta realizada e finalização.
+- Saída: registro do encerramento presencial da visita.
+- Painel e totem: preservam o fluxo público das senhas SP, SE e SG.
+- Gestão: métricas clínicas, relatórios de tickets, auditoria e gestão de usuários.
 
-O layout é responsivo e mantém a informação principal visível sem depender de cor ou áudio.
+A interface é responsiva. CPF, dados clínicos e documentos aparecem apenas em áreas autenticadas; o painel público não expõe identificação do paciente.

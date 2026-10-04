@@ -12,6 +12,7 @@ import { Atendimento } from './pages/Atendimento'
 import { Relatorios } from './pages/Relatorios'
 import { Usuarios } from './pages/Usuarios'
 
+
 export default function App() {
   return <div className="app"><Header /><main><Routes>
     <Route path="/" element={<Home />} />
